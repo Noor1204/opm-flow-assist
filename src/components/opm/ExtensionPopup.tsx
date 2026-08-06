@@ -134,7 +134,7 @@ export function ExtensionPopup() {
   }
 
   return (
-    <div className="flex h-[640px] w-[400px] flex-col overflow-hidden rounded-2xl border border-border bg-background text-foreground">
+    <div className="relative flex h-[640px] w-[400px] flex-col overflow-hidden rounded-2xl border border-border bg-background text-foreground">
       {/* Header */}
       <div className="relative shrink-0 overflow-hidden border-b border-border px-4 py-3.5">
         <div className="absolute inset-0 aura opacity-70" />
