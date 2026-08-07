@@ -11,7 +11,7 @@ import {
   StateBlock,
   StatusBadge,
 } from "@/components/opm/ui";
-import { defaultSettings, tickets } from "@/lib/opm-data";
+import { defaultSettings, tickets, type Ticket } from "@/lib/opm-data";
 
 export const Route = createFileRoute("/tickets/$id")({
   head: () => ({
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/tickets/$id")({
 });
 
 function TicketDetail() {
-  const { ticket } = Route.useLoaderData();
+  const { ticket } = Route.useLoaderData() as { ticket: Ticket };
   const threshold = defaultSettings.confidenceThreshold;
   const low = ticket.aiConfidence > 0 && ticket.aiConfidence < threshold;
 
