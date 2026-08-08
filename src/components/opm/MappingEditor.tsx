@@ -294,9 +294,17 @@ export function MappingEditor({ ticket }: { ticket: Ticket }) {
               <Btn size="sm" onClick={() => setPhase("editing")}>
                 <Pencil className="size-3.5" /> Edit
               </Btn>
-              <Btn variant="danger" size="sm" onClick={() => setPhase("rejected")}>
+              <Btn
+                variant="danger"
+                size="sm"
+                onClick={() => {
+                  setApproved(false);
+                  setPhase("rejected");
+                }}
+              >
                 <XCircle className="size-3.5" /> Reject
               </Btn>
+
               <Btn size="sm" onClick={() => setPhase("draft")}>
                 <Save className="size-3.5" /> Save draft
               </Btn>
