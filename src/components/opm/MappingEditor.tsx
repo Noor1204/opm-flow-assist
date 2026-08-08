@@ -83,6 +83,17 @@ export function MappingEditor({ ticket }: { ticket: Ticket }) {
     ticket.status === "Failed" ? "failed" : ticket.status === "Draft" ? "draft" : "editing",
   );
   const [edited, setEdited] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectedAt, setRejectedAt] = useState("");
+
+  const runSubmit = (isRetry: boolean) => {
+    setPhase("submitting");
+    setTimeout(
+      () => setPhase(!isRetry && ticket.status === "Failed" ? "failed" : "success"),
+      1200,
+    );
+  };
+
 
   const value = (k: MappingField["key"]) => fields.find((f) => f.key === k)?.userValue ?? "";
   const set = (k: MappingField["key"], v: string) => {
