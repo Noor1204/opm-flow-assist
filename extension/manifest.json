@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "OPM Flow Assist",
+  "version": "0.1.0",
+  "description": "Sequentially fills approved OPM tickets using the user's existing logged-in browser session.",
+  "permissions": ["storage", "tabs", "scripting"],
+  "host_permissions": ["http://projects.e-connectsolutions.com/*", "https://projects.e-connectsolutions.com/*"],
+  "action": { "default_title": "OPM Flow Assist" },
+  "content_scripts": [
+    {
+      "matches": ["http://projects.e-connectsolutions.com/*", "https://projects.e-connectsolutions.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
