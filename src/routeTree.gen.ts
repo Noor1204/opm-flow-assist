@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApprovalsRouteImport } from './routes/approvals'
 import { Route as ExtensionRouteImport } from './routes/extension'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as MappingRouteImport } from './routes/mapping'
 import { Route as TicketsIndexRouteImport } from './routes/tickets.index'
 import { Route as TicketsIdRouteImport } from './routes/tickets.$id'
@@ -29,6 +30,11 @@ const ApprovalsRoute = ApprovalsRouteImport.update({
 const ExtensionRoute = ExtensionRouteImport.update({
   id: '/extension',
   path: '/extension',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MappingRoute = MappingRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/approvals': typeof ApprovalsRoute
   '/extension': typeof ExtensionRoute
+  '/history': typeof HistoryRoute
   '/mapping': typeof MappingRoute
   '/tickets/$id': typeof TicketsIdRoute
   '/tickets/': typeof TicketsIndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/approvals': typeof ApprovalsRoute
   '/extension': typeof ExtensionRoute
+  '/history': typeof HistoryRoute
   '/mapping': typeof MappingRoute
   '/tickets/$id': typeof TicketsIdRoute
   '/tickets': typeof TicketsIndexRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/approvals': typeof ApprovalsRoute
   '/extension': typeof ExtensionRoute
+  '/history': typeof HistoryRoute
   '/mapping': typeof MappingRoute
   '/tickets/$id': typeof TicketsIdRoute
   '/tickets/': typeof TicketsIndexRoute
@@ -78,17 +87,25 @@ export interface FileRouteTypes {
     | '/'
     | '/approvals'
     | '/extension'
+    | '/history'
     | '/mapping'
     | '/tickets/$id'
     | '/tickets/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/approvals' | '/extension' | '/mapping' | '/tickets/$id' | '/tickets'
+    | '/'
+    | '/approvals'
+    | '/extension'
+    | '/history'
+    | '/mapping'
+    | '/tickets/$id'
+    | '/tickets'
   id:
     | '__root__'
     | '/'
     | '/approvals'
     | '/extension'
+    | '/history'
     | '/mapping'
     | '/tickets/$id'
     | '/tickets/'
@@ -98,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApprovalsRoute: typeof ApprovalsRoute
   ExtensionRoute: typeof ExtensionRoute
+  HistoryRoute: typeof HistoryRoute
   MappingRoute: typeof MappingRoute
   TicketsIdRoute: typeof TicketsIdRoute
   TicketsIndexRoute: typeof TicketsIndexRoute
@@ -124,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/extension'
       fullPath: '/extension'
       preLoaderRoute: typeof ExtensionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mapping': {
@@ -154,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApprovalsRoute: ApprovalsRoute,
   ExtensionRoute: ExtensionRoute,
+  HistoryRoute: HistoryRoute,
   MappingRoute: MappingRoute,
   TicketsIdRoute: TicketsIdRoute,
   TicketsIndexRoute: TicketsIndexRoute,
