@@ -83,6 +83,17 @@ export function MappingEditor({ ticket }: { ticket: Ticket }) {
     ticket.status === "Failed" ? "failed" : ticket.status === "Draft" ? "draft" : "editing",
   );
   const [edited, setEdited] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectedAt, setRejectedAt] = useState("");
+
+  const runSubmit = (isRetry: boolean) => {
+    setPhase("submitting");
+    setTimeout(
+      () => setPhase(!isRetry && ticket.status === "Failed" ? "failed" : "success"),
+      1200,
+    );
+  };
+
 
   const value = (k: MappingField["key"]) => fields.find((f) => f.key === k)?.userValue ?? "";
   const set = (k: MappingField["key"], v: string) => {
@@ -294,9 +305,17 @@ export function MappingEditor({ ticket }: { ticket: Ticket }) {
               <Btn size="sm" onClick={() => setPhase("editing")}>
                 <Pencil className="size-3.5" /> Edit
               </Btn>
-              <Btn variant="danger" size="sm" onClick={() => setPhase("rejected")}>
+              <Btn
+                variant="danger"
+                size="sm"
+                onClick={() => {
+                  setApproved(false);
+                  setPhase("rejected");
+                }}
+              >
                 <XCircle className="size-3.5" /> Reject
               </Btn>
+
               <Btn size="sm" onClick={() => setPhase("draft")}>
                 <Save className="size-3.5" /> Save draft
               </Btn>
@@ -322,9 +341,51 @@ export function MappingEditor({ ticket }: { ticket: Ticket }) {
           </div>
 
           {phase === "rejected" && (
-            <p className="mt-3 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
-              Mapping rejected. The ticket returns to the AI review queue with your feedback.
-            </p>
+            <div className="mt-3 space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3">
+              <p className="text-[11px] font-semibold text-destructive">
+                {rejectedAt
+                  ? `Mapping rejected at ${rejectedAt}. Ticket returned to the AI review queue with your feedback.`
+                  : "Rejecting sends this ticket back to the AI review queue. A reason is required."}
+              </p>
+              {rejectedAt ? (
+                <p className="text-[11px] leading-relaxed text-foreground/85">
+                  Reason: {rejectReason}
+                </p>
+              ) : (
+                <>
+                  <Textarea
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    placeholder="Why is this mapping wrong? (e.g. wrong module, hours not billable…)"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Btn
+                      variant="danger"
+                      size="sm"
+                      disabled={rejectReason.trim().length < 5}
+                      onClick={() => setRejectedAt("Today, 09:47")}
+                    >
+                      <XCircle className="size-3.5" /> Confirm rejection
+                    </Btn>
+                    <Btn size="sm" onClick={() => setPhase("editing")}>
+                      Cancel
+                    </Btn>
+                  </div>
+                </>
+              )}
+              {rejectedAt && (
+                <Btn
+                  size="sm"
+                  onClick={() => {
+                    setRejectedAt("");
+                    setRejectReason("");
+                    setPhase("editing");
+                  }}
+                >
+                  <Pencil className="size-3.5" /> Re-open mapping
+                </Btn>
+              )}
+            </div>
           )}
           {phase === "draft" && (
             <p className="mt-3 rounded-xl border border-border bg-surface-2/50 px-3 py-2 text-[11px] text-muted-foreground">
@@ -339,7 +400,7 @@ export function MappingEditor({ ticket }: { ticket: Ticket }) {
           phase={phase}
           ticket={ticket}
           submitted={submitted}
-          onRetry={() => setPhase("submitting")}
+          onRetry={() => runSubmit(true)}
           onEdit={() => setPhase("editing")}
           onDraft={() => setPhase("draft")}
         />
@@ -354,11 +415,11 @@ export function MappingEditor({ ticket }: { ticket: Ticket }) {
           onClose={() => setPreviewOpen(false)}
           onConfirm={() => {
             setPreviewOpen(false);
-            setPhase("submitting");
-            setTimeout(() => setPhase(ticket.status === "Failed" ? "failed" : "success"), 1200);
+            runSubmit(false);
           }}
         />
       )}
+
     </div>
   );
 }

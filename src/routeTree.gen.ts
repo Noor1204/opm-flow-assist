@@ -10,7 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApprovalsRouteImport } from './routes/approvals'
 import { Route as ExtensionRouteImport } from './routes/extension'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as MappingRouteImport } from './routes/mapping'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TicketsIndexRouteImport } from './routes/tickets.index'
 import { Route as TicketsIdRouteImport } from './routes/tickets.$id'
 
@@ -19,9 +23,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApprovalsRoute = ApprovalsRouteImport.update({
+  id: '/approvals',
+  path: '/approvals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExtensionRoute = ExtensionRouteImport.update({
   id: '/extension',
   path: '/extension',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MappingRoute = MappingRouteImport.update({
+  id: '/mapping',
+  path: '/mapping',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TicketsIndexRoute = TicketsIndexRouteImport.update({
@@ -37,34 +61,75 @@ const TicketsIdRoute = TicketsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/approvals': typeof ApprovalsRoute
   '/extension': typeof ExtensionRoute
+  '/history': typeof HistoryRoute
+  '/mapping': typeof MappingRoute
+  '/settings': typeof SettingsRoute
   '/tickets/$id': typeof TicketsIdRoute
   '/tickets/': typeof TicketsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/approvals': typeof ApprovalsRoute
   '/extension': typeof ExtensionRoute
+  '/history': typeof HistoryRoute
+  '/mapping': typeof MappingRoute
+  '/settings': typeof SettingsRoute
   '/tickets/$id': typeof TicketsIdRoute
   '/tickets': typeof TicketsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/approvals': typeof ApprovalsRoute
   '/extension': typeof ExtensionRoute
+  '/history': typeof HistoryRoute
+  '/mapping': typeof MappingRoute
+  '/settings': typeof SettingsRoute
   '/tickets/$id': typeof TicketsIdRoute
   '/tickets/': typeof TicketsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/extension' | '/tickets/$id' | '/tickets/'
+  fullPaths:
+    | '/'
+    | '/approvals'
+    | '/extension'
+    | '/history'
+    | '/mapping'
+    | '/settings'
+    | '/tickets/$id'
+    | '/tickets/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/extension' | '/tickets/$id' | '/tickets'
-  id: '__root__' | '/' | '/extension' | '/tickets/$id' | '/tickets/'
+  to:
+    | '/'
+    | '/approvals'
+    | '/extension'
+    | '/history'
+    | '/mapping'
+    | '/settings'
+    | '/tickets/$id'
+    | '/tickets'
+  id:
+    | '__root__'
+    | '/'
+    | '/approvals'
+    | '/extension'
+    | '/history'
+    | '/mapping'
+    | '/settings'
+    | '/tickets/$id'
+    | '/tickets/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApprovalsRoute: typeof ApprovalsRoute
   ExtensionRoute: typeof ExtensionRoute
+  HistoryRoute: typeof HistoryRoute
+  MappingRoute: typeof MappingRoute
+  SettingsRoute: typeof SettingsRoute
   TicketsIdRoute: typeof TicketsIdRoute
   TicketsIndexRoute: typeof TicketsIndexRoute
 }
@@ -78,11 +143,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/approvals': {
+      id: '/approvals'
+      path: '/approvals'
+      fullPath: '/approvals'
+      preLoaderRoute: typeof ApprovalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/extension': {
       id: '/extension'
       path: '/extension'
       fullPath: '/extension'
       preLoaderRoute: typeof ExtensionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mapping': {
+      id: '/mapping'
+      path: '/mapping'
+      fullPath: '/mapping'
+      preLoaderRoute: typeof MappingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tickets/': {
@@ -104,7 +197,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApprovalsRoute: ApprovalsRoute,
   ExtensionRoute: ExtensionRoute,
+  HistoryRoute: HistoryRoute,
+  MappingRoute: MappingRoute,
+  SettingsRoute: SettingsRoute,
   TicketsIdRoute: TicketsIdRoute,
   TicketsIndexRoute: TicketsIndexRoute,
 }
