@@ -1,12 +1,64 @@
 (() => {
-  const SELECTORS = { project: '#ddlProj', taskType: '#ddlTaskType', taskCategory: '#ddlTaskCat', hours: '#txtHrs', save: '#LnkSave', task: '#ddlTask' };
-  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-  function setNativeValue(element, value) { const prototype = Object.getPrototypeOf(element); const setter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set; if (setter) setter.call(element, value); else element.value = value; element.dispatchEvent(new Event('input', { bubbles: true })); element.dispatchEvent(new Event('change', { bubbles: true })); }
-  function callPageFunction(name) { try { const fn = window[name]; if (typeof fn === 'function') fn.call(window); } catch (e) { console.warn(`OPM ${name}() failed`, e); } }
-  function selectByValue(selector, value, handler) { const el = document.querySelector(selector); if (!(el instanceof HTMLSelectElement)) throw new Error(`OPM field not found: ${selector}`); const option = [...el.options].find(o => o.value === String(value)); if (!option) throw new Error(`OPM option not found for ${selector}: ${value}`); setNativeValue(el, option.value); if (handler) callPageFunction(handler); return option.textContent?.trim() || option.value; }
-  function setInput(selector, value) { const el = document.querySelector(selector); if (!(el instanceof HTMLInputElement)) throw new Error(`OPM input not found: ${selector}`); setNativeValue(el, String(value ?? '')); el.dispatchEvent(new Event('blur', { bubbles: true })); }
-  async function selectTask(taskText) { const select = document.querySelector(SELECTORS.task); if (select instanceof HTMLSelectElement) { const option = [...select.options].find(o => o.textContent?.trim() === taskText || o.value === taskText || o.textContent?.includes(taskText)); if (!option) throw new Error(`Task not found: ${taskText}`); setNativeValue(select, option.value); return option.textContent?.trim() || taskText; } const container = document.querySelector('#select2-ddlTask-container'); const trigger = container?.closest('.select2-selection'); if (!(trigger instanceof HTMLElement)) throw new Error('OPM Task Select2 control not found.'); trigger.click(); await wait(150); const search = document.querySelector('.select2-container--open .select2-search__field'); if (!(search instanceof HTMLInputElement)) throw new Error('OPM Task search field not found.'); setNativeValue(search, taskText); search.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' })); await wait(700); const options = [...document.querySelectorAll('.select2-container--open .select2-results__option')]; const match = options.find(o => o.textContent?.trim() === taskText || o.textContent?.includes(taskText)); if (!(match instanceof HTMLElement)) throw new Error(`Task not found: ${taskText}`); match.click(); return taskText; }
-  async function fillTicket(ticket) { if (!ticket?.id) throw new Error('Ticket ID is required.'); selectByValue(SELECTORS.project, ticket.projectValue ?? '417', 'Set_Hid'); await wait(250); selectByValue(SELECTORS.taskType, ticket.taskTypeValue ?? 'M', 'Set_hidType'); await wait(250); selectByValue(SELECTORS.taskCategory, ticket.taskCategoryValue ?? '22', 'Set_hidCat'); await wait(250); await selectTask(ticket.taskText ?? ticket.id); setInput(SELECTORS.hours, ticket.hours); return { ok: true, ticketId: ticket.id }; }
-  async function saveTicket() { const save = document.querySelector(SELECTORS.save); if (!(save instanceof HTMLElement)) throw new Error('OPM Save button not found.'); save.click(); return { ok: true }; }
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => { if (message?.source !== 'opm-flow-assist') return; (async () => { try { const result = message.action === 'fill-ticket' ? await fillTicket(message.ticket) : message.action === 'save-ticket' ? await saveTicket() : (() => { throw new Error(`Unknown action: ${message.action}`); })(); sendResponse({ ok: true, result }); } catch (error) { sendResponse({ ok: false, error: error instanceof Error ? error.message : String(error) }); } })(); return true; });
+  const S = { date:'#txtTaskDate', project:'#ddlProj', taskType:'#ddlTaskType', category:'#ddlTaskCat', task:'#ddlTask', hours:'#txtHrs', save:'#LnkSave' };
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function setValue(el, value, fireChange=false) {
+    const proto = Object.getPrototypeOf(el);
+    const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+    if (setter) setter.call(el, String(value)); else el.value = String(value);
+    el.dispatchEvent(new Event('input', {bubbles:true}));
+    if (fireChange) el.dispatchEvent(new Event('change', {bubbles:true}));
+  }
+  function fn(name) { try { if (typeof window[name] === 'function') window[name](); } catch(e) {} }
+  function select(selector, value, handler) {
+    const el = document.querySelector(selector);
+    if (!(el instanceof HTMLSelectElement)) throw new Error(`OPM field not found: ${selector}`);
+    const opt = [...el.options].find(o => o.value === String(value));
+    if (!opt) throw new Error(`OPM option not found: ${value}`);
+    setValue(el, opt.value, false); fn(handler);
+    return opt.textContent.trim();
+  }
+  function setDate(value) {
+    const el = document.querySelector(S.date);
+    if (!(el instanceof HTMLInputElement)) throw new Error('OPM date field not found.');
+    setValue(el, value, false); fn('setDate');
+  }
+  function postBack(control) {
+    if (typeof window.__doPostBack !== 'function') throw new Error('OPM postback function not found.');
+    window.__doPostBack(control, '');
+  }
+  async function task(text) {
+    const sel = document.querySelector(S.task);
+    if (sel instanceof HTMLSelectElement) {
+      const opt = [...sel.options].find(o => o.value === text || o.textContent.trim() === text || o.textContent.includes(text));
+      if (!opt) throw new Error(`Task not found: ${text}`);
+      setValue(sel, opt.value, false); fn('Set_hidTask'); return opt.textContent.trim();
+    }
+    const box = document.querySelector('#select2-ddlTask-container');
+    const trigger = box?.closest('.select2-selection');
+    if (!(trigger instanceof HTMLElement)) throw new Error('OPM Task Select2 control not found.');
+    trigger.click(); await sleep(150);
+    const search = document.querySelector('.select2-container--open .select2-search__field');
+    if (!(search instanceof HTMLInputElement)) throw new Error('OPM Task search field not found.');
+    setValue(search, text, true); await sleep(500);
+    const opts = [...document.querySelectorAll('.select2-container--open .select2-results__option')];
+    const match = opts.find(o => o.textContent.trim() === text || o.textContent.includes(text));
+    if (!(match instanceof HTMLElement)) throw new Error(`Task not found: ${text}`);
+    match.click(); await sleep(100); fn('Set_hidTask'); return text;
+  }
+  async function action(message) {
+    const t = message.ticket || {};
+    if (message.action === 'set-date') { setDate(t.date); return {ok:true}; }
+    if (message.action === 'set-project') { select(S.project, '417', 'Set_Hid'); postBack('ddlProj'); return {ok:true}; }
+    if (message.action === 'set-tasktype') { select(S.taskType, 'P', 'Set_hidType'); postBack('ddlTaskType'); return {ok:true}; }
+    if (message.action === 'fill-rest') {
+      select(S.category, '22', 'Set_hidCat'); await task(t.id); const h=document.querySelector(S.hours); if (!(h instanceof HTMLInputElement)) throw new Error('OPM hours field not found.'); setValue(h, t.hours, false); h.dispatchEvent(new Event('blur',{bubbles:true})); return {ok:true};
+    }
+    if (message.action === 'save-ticket') { const save=document.querySelector(S.save); if (!(save instanceof HTMLElement)) throw new Error('OPM Save button not found.'); save.click(); return {ok:true}; }
+    throw new Error(`Unknown action: ${message.action}`);
+  }
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message?.source !== 'opm-flow-assist') return;
+    action(message).then(result=>sendResponse({ok:true,result})).catch(e=>sendResponse({ok:false,error:e instanceof Error?e.message:String(e)}));
+    return true;
+  });
 })();
