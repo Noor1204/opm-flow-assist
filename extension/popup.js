@@ -65,19 +65,14 @@ const fillRest = (ticketId, hours) => {
     if (!opt) throw new Error(`Task not found: ${ticketId}`);
     select.value = opt.value;
     if (typeof window.Set_hidTask === 'function') window.Set_hidTask();
-  } else {
-    const container = document.querySelector('#select2-ddlTask-container');
-    const trigger = container?.closest('.select2-selection');
-    if (!(trigger instanceof HTMLElement)) throw new Error('OPM Task Select2 control not found.');
-    trigger.click();
-    const search = document.querySelector('.select2-container--open .select2-search__field');
-    if (!(search instanceof HTMLInputElement)) throw new Error('OPM Task search field not found.');
-    search.value = ticketId;
-    search.dispatchEvent(new Event('input', { bubbles: true }));
-    search.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: ticketId.slice(-1) }));
-    return { needsSelect: true };
+    return { needsSelect: false };
   }
-  return { needsSelect: false };
+
+  const container = document.querySelector('#select2-ddlTask-container');
+  const trigger = container?.closest('.select2-selection');
+  if (!(trigger instanceof HTMLElement)) throw new Error('OPM Task Select2 control not found.');
+  trigger.click();
+  return { needsSelect: true };
 };
 
 const finishTaskAndSave = (ticketId) => {
