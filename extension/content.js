@@ -11,20 +11,30 @@
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   function setNativeValue(element, value) {
-    const setter = Object.getOwnPropertyDescriptor(element, 'value')?.set;
     const prototype = Object.getPrototypeOf(element);
-    const prototypeSetter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set;
-    (prototypeSetter || setter)?.call(element, value);
-    element.dispatchEvent(new Event('change', { bubbles: true }));
+    const setter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set;
+    if (setter) setter.call(element, value);
+    else element.value = value;
     element.dispatchEvent(new Event('input', { bubbles: true }));
+    element.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  function selectByValue(selector, value) {
+  function callPageFunction(name) {
+    try {
+      const fn = window[name];
+      if (typeof fn === 'function') fn.call(window);
+    } catch (error) {
+      console.warn(`OPM ${name}() failed`, error);
+    }
+  }
+
+  function selectByValue(selector, value, pageHandler) {
     const element = document.querySelector(selector);
     if (!(element instanceof HTMLSelectElement)) throw new Error(`OPM field not found: ${selector}`);
     const option = [...element.options].find((item) => item.value === String(value));
     if (!option) throw new Error(`OPM option not found for ${selector}: ${value}`);
     setNativeValue(element, option.value);
+    if (pageHandler) callPageFunction(pageHandler);
     return option.textContent?.trim() || option.value;
   }
 
@@ -32,6 +42,7 @@
     const element = document.querySelector(selector);
     if (!(element instanceof HTMLInputElement)) throw new Error(`OPM input not found: ${selector}`);
     setNativeValue(element, String(value ?? ''));
+    element.dispatchEvent(new Event('blur', { bubbles: true }));
   }
 
   async function selectTask(taskText) {
@@ -47,11 +58,12 @@
     const trigger = container?.closest('.select2-selection');
     if (!(trigger instanceof HTMLElement)) throw new Error('OPM Task Select2 control not found.');
     trigger.click();
-    await wait(100);
+    await wait(150);
     const search = document.querySelector('.select2-container--open .select2-search__field');
     if (!(search instanceof HTMLInputElement)) throw new Error('OPM Task search field not found.');
     setNativeValue(search, taskText);
-    await wait(500);
+    search.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' }));
+    await wait(700);
     const options = [...document.querySelectorAll('.select2-container--open .select2-results__option')];
     const match = options.find((item) => item.textContent?.trim() === taskText || item.textContent?.includes(taskText));
     if (!(match instanceof HTMLElement)) throw new Error(`Task not found: ${taskText}`);
@@ -61,9 +73,12 @@
 
   async function fillTicket(ticket) {
     if (!ticket?.id) throw new Error('Ticket ID is required.');
-    selectByValue(SELECTORS.project, ticket.projectValue ?? '417');
-    selectByValue(SELECTORS.taskType, ticket.taskTypeValue ?? 'M');
-    selectByValue(SELECTORS.taskCategory, ticket.taskCategoryValue ?? '22');
+    selectByValue(SELECTORS.project, ticket.projectValue ?? '417', 'Set_Hid');
+    await wait(250);
+    selectByValue(SELECTORS.taskType, ticket.taskTypeValue ?? 'M', 'Set_hidType');
+    await wait(250);
+    selectByValue(SELECTORS.taskCategory, ticket.taskCategoryValue ?? '22', 'Set_hidCat');
+    await wait(250);
     await selectTask(ticket.taskText ?? ticket.id);
     setInput(SELECTORS.hours, ticket.hours);
     return { ok: true, ticketId: ticket.id };
