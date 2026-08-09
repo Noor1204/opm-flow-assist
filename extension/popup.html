@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>OPM Flow Assist</title>
-  <style>body{font:13px Arial,sans-serif;width:360px;margin:0;padding:14px}h3{margin:0 0 10px}textarea{width:100%;height:150px;box-sizing:border-box}button{margin-top:10px;padding:8px 12px}#status{margin-top:10px;white-space:pre-wrap}</style>
+  <style>body{font:13px Arial,sans-serif;width:380px;margin:0;padding:14px}h3{margin:0 0 10px}.row{margin:8px 0}label{display:block;margin-bottom:4px;font-weight:600}input,textarea{width:100%;box-sizing:border-box;padding:7px}textarea{height:150px}button{margin-top:10px;padding:8px 12px}#status{margin-top:10px;white-space:pre-wrap}</style>
 </head>
 <body>
   <h3>OPM Flow Assist</h3>
-  <div>One ticket per line: <code>ticket | hours</code></div>
-  <textarea id="tickets" placeholder="12345 | 2
-12346 | 1.5"></textarea>
-  <button id="start">Fill & Save tickets</button>
+  <div class="row"><label for="date">OPM Date</label><input id="date" type="date"></div>
+  <div class="row"><label for="tickets">Tickets</label><div>One ticket per line: <code>ticket | hours</code></div><textarea id="tickets" placeholder="RERP028068 | 2
+RERP028069 | 1.5"></textarea></div>
+  <button id="start">Fill & Save All Tickets</button>
   <div id="status"></div>
   <script src="popup.js"></script>
 </body>
